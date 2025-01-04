@@ -24,24 +24,24 @@ def respond(user_input):
         output_nums = []
 
         if lowercase == "help":
-            return 'To roll a d20, type "!1d20"\nTo roll two d20s, type "!2d20"\nTo roll a d50, type "!1d50", and so on\nAll commands begin with a "!" at the start, followed by the number of dice, "d", and the size of the dice'
+            return "```To roll a d20, type \"!1d20\"\nTo roll two d20s, type \"!2d20\"\nTo roll a d50, type \"!1d50\", and so on\nAll commands begin with a \"!\" at the start, followed by the number of dice, \"d\", and the size of the dice```"
         elif len(lowercase) < 3 or "d" not in lowercase:
-            return 'Invalid command. Type "!help" for more info'
+            return '```Invalid command. Type "!help" for more info```'
         else:
             nums = lowercase.split("d")
 
             if len(nums) > 2:
-                return 'Invalid command. Type "!help" for more info'
+                return '```Invalid command. Type "!help" for more info```'
             elif not nums[0].isnumeric() or not nums[1].isnumeric():
-                return 'Invalid command. Type "!help" for more info'
+                return '```Invalid command. Type "!help" for more info```'
             else:
                 for i in range(int(nums[0])):
                     output_nums.append(randint(1, int(nums[1])))
 
         if len(output_nums) == 0:
-            return "You somehow rolled a nonexistent dice"
+            return "```You somehow rolled a nonexistent dice```"
         elif len(output_nums) > 1:
-            output_string = "Roll: "
+            output_string = "```Roll: "
             sum = 0
             for i in range(len(output_nums)):
                 if i != (len(output_nums) - 1):
@@ -49,17 +49,17 @@ def respond(user_input):
                 else:
                     output_string += (str(output_nums[i]))
                 sum += output_nums[i]
-            output_string += ("\nTotal: " + str(sum))
+            output_string += ("\n\nTotal: " + str(sum) + "```")
             return output_string
         else:
-            return f'Roll: {output_nums[0]}'
+            return f'```Roll: {output_nums[0]}```'
 
 
 # Handles sending messages
 async def send(message, user_message):
     try:
         response = respond(user_message)
-        await message.channel.send(response)
+        await message.reply(response)
     except Exception as e:
         print(e)
 
