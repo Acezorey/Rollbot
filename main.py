@@ -30,14 +30,14 @@ def respond(user_input):
 
     # Command is correct and does not have an add or subtract
     elif num_verification == 1:
-        result = roll(input_array[1], "+", 0)
+        result = roll(input_array[1])
         if len(input_array) > 2:
             result = to_string(input_array[2:]) + "\n\n" + result
         return "```" + result + "```"
 
     # Command is correct and has an add and subtract
     else:
-        result = roll(input_array[1], input_array[2], input_array[3])
+        result = roll(input_array[1], operand=input_array[2], constant_str=input_array[3])
         if len(input_array) > 4:
             result = to_string(input_array[4:]) + "\n\n" + result
         return "```" + result + "```"
@@ -57,54 +57,38 @@ def validate(input_array):
     if not roll[0].isnumeric() or not roll[1].isnumeric():
         return 0
 
-    if length >= 4 and (input_array[3] == "+" or input_array[3] == "-" and input_array[4].isnumeric()):
+    if length >= 4 and (input_array[2] == "+" or input_array[2] == "-" and input_array[3].isnumeric()):
         return 2
     else:
         return 1
     
 
-def roll(input, operand, constant_str):
+def roll(input, operand="+", constant_str=0):
     nums_str = input.split("d")
     nums = [int(nums_str[0]), int(nums_str[1])]
     constant = int(constant_str)
 
-    result = "Roll: "
+    result = ""
     sum = 0
     num = 0
 
     if nums[0] == 0 or nums[1] == 0:
         return "You somehow rolled a nonexistent dice"
 
+    for i in range(nums[0]):
+        if i != 0 and i != nums[0]:
+            result += " + "
+        num = randint(1, nums[1])
+        sum += num
+        result += str(num)
+    
     if constant > 0:
-        for i in range(nums[0]):
-            num = randint(1, nums[1])
-            sum += num
-            if i == 0:
-                result += "("
-            if i == nums[0] - 1:
-                result += str(num) + ")"
-                continue
-            result += str(num) + " + "
-        
-        result += operand + " " + constant + " = "
-        if operand == "+":
-            sum += int(constant)
-        elif operand == "-":
-            sum -= int(constant)
-        else:
-            return f'Operation {operand} not supported. Use + or -'
-        result += str(sum)
+        sum += constant
+        result = "(" + result + f') {operand} ' + constant_str + f"\n\nTotal: {sum}"
+    elif nums[0] > 1:
+        result += f"\n\nTotal: {sum}"
 
-    elif constant == 0:
-        for i in range(nums[0]):
-            num = randint(1, nums[1])
-            sum += num
-            if i == nums[0] - 1:
-                result += str(num)
-                continue
-            result += str(num) + " + "
-        
-        result += " = " + str(sum)
+    result = "Roll: " + result
     
     return result
 
