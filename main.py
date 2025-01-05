@@ -17,42 +17,108 @@ client = Client(intents=intents)
 
 # Handles creation of message response
 def respond(user_input):
-    lowercase = user_input.lower()
+    input_array = user_input.split()
 
-    if lowercase != '' and lowercase[0] == '!':
-        lowercase = lowercase[1:]
-        output_nums = []
+    if input_array[0] == '!help':
+        return '```Commands:\n!help: Returns list of commands\n!roll: Roll dice\n\nHow to roll:\nType "1d20" to roll a 20 sided dice 1 time\nType "2d20" to roll a 20 sided dice 5 times\nType "1d50" to roll a 50 sided dice 1 time\nTo add or subtract from a roll, type "1d20 + 2" or "1d20 - 2" for example\n\nFor all rolls: XdY +/- Z\n - X: number of dice\n - Y: size of dice\n - Z: constant addition\n\nAdding extra words after the roll allows you to label it\nEx: "1d20 Roll to hit"```'
+    
+    num_verification = validate(input_array)
 
-        if lowercase == "help":
-            return "```To roll a d20, type \"!1d20\"\nTo roll two d20s, type \"!2d20\"\nTo roll a d50, type \"!1d50\", and so on\nAll commands begin with a \"!\" at the start, followed by the number of dice, \"d\", and the size of the dice```"
-        elif len(lowercase) < 3 or "d" not in lowercase:
-            return '```Invalid command. Type "!help" for more info```'
+    # Command is incorrect
+    if num_verification == 0:
+        return '```You have entered an incorrect command. Type "!help" for more info```'
+
+    # Command is correct and does not have an add or subtract
+    elif num_verification == 1:
+        result = roll(input_array[1], "+", 0)
+        if len(input_array) > 2:
+            result = to_string(input_array[2:]) + "\n\n" + result
+        return "```" + result + "```"
+
+    # Command is correct and has an add and subtract
+    else:
+        result = roll(input_array[1], input_array[2], input_array[3])
+        if len(input_array) > 4:
+            result = to_string(input_array[4:]) + "\n\n" + result
+        return "```" + result + "```"
+
+
+def validate(input_array):
+    length = len(input_array)
+
+    if length < 2:
+        return 0
+    
+    roll = input_array[1].split("d")
+
+    if len(roll) < 2 or len(roll) > 2:
+        return 0
+    
+    if not roll[0].isnumeric() or not roll[1].isnumeric():
+        return 0
+
+    if length >= 4 and (input_array[3] == "+" or input_array[3] == "-" and input_array[4].isnumeric()):
+        return 2
+    else:
+        return 1
+    
+
+def roll(input, operand, constant_str):
+    nums_str = input.split("d")
+    nums = [int(nums_str[0]), int(nums_str[1])]
+    constant = int(constant_str)
+
+    result = "Roll: "
+    sum = 0
+    num = 0
+
+    if nums[0] == 0 or nums[1] == 0:
+        return "You somehow rolled a nonexistent dice"
+
+    if constant > 0:
+        for i in range(nums[0]):
+            num = randint(1, nums[1])
+            sum += num
+            if i == 0:
+                result += "("
+            if i == nums[0] - 1:
+                result += str(num) + ")"
+                continue
+            result += str(num) + " + "
+        
+        result += operand + " " + constant + " = "
+        if operand == "+":
+            sum += int(constant)
+        elif operand == "-":
+            sum -= int(constant)
         else:
-            nums = lowercase.split("d")
+            return f'Operation {operand} not supported. Use + or -'
+        result += str(sum)
 
-            if len(nums) > 2:
-                return '```Invalid command. Type "!help" for more info```'
-            elif not nums[0].isnumeric() or not nums[1].isnumeric():
-                return '```Invalid command. Type "!help" for more info```'
-            else:
-                for i in range(int(nums[0])):
-                    output_nums.append(randint(1, int(nums[1])))
+    elif constant == 0:
+        for i in range(nums[0]):
+            num = randint(1, nums[1])
+            sum += num
+            if i == nums[0] - 1:
+                result += str(num)
+                continue
+            result += str(num) + " + "
+        
+        result += " = " + str(sum)
+    
+    return result
 
-        if len(output_nums) == 0:
-            return "```You somehow rolled a nonexistent dice```"
-        elif len(output_nums) > 1:
-            output_string = "```Roll: "
-            sum = 0
-            for i in range(len(output_nums)):
-                if i != (len(output_nums) - 1):
-                    output_string += (str(output_nums[i]) + " + ")
-                else:
-                    output_string += (str(output_nums[i]))
-                sum += output_nums[i]
-            output_string += ("\n\nTotal: " + str(sum) + "```")
-            return output_string
-        else:
-            return f'```Roll: {output_nums[0]}```'
+
+def to_string(user_input_array):
+    result = ""
+
+    for i in range(len(user_input_array)):
+        if i == 0:
+            result += user_input_array[i]
+            continue
+        result += " " + user_input_array[i]
+
+    return result
 
 
 # Handles sending messages
@@ -83,7 +149,9 @@ async def on_message(message):
     channel = str(message.channel)
 
     print(f'[{channel}] {username}: "{user_message}"')
-    await send(message, user_message)
+
+    if message.content[0:6] == '!roll ' or message.content == '!help':
+        await send(message, user_message)
 
 
 # Code main entry point
