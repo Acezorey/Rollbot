@@ -94,7 +94,7 @@ def roll(input, operand="+", constant_str=0):
 
 
 def to_string(user_input_array):
-    result = ""
+    result = '['
 
     for i in range(len(user_input_array)):
         if i == 0:
@@ -102,7 +102,7 @@ def to_string(user_input_array):
             continue
         result += " " + user_input_array[i]
 
-    return result
+    return result + ']'
 
 
 # Handles sending messages
