@@ -42,7 +42,7 @@ def respond(user_input):
             result = to_string(input_array[4:]) + "\n\n" + result
         return "```" + result + "```"
 
-
+# Validates the correctness of the user input
 def validate(input_array):
     length = len(input_array)
 
@@ -62,7 +62,7 @@ def validate(input_array):
     else:
         return 1
     
-
+# Calculates random dice rolls and add ons
 def roll(input, operand="+", constant_str=0):
     nums_str = input.split("d")
     nums = [int(nums_str[0]), int(nums_str[1])]
@@ -92,7 +92,7 @@ def roll(input, operand="+", constant_str=0):
     
     return result
 
-
+# Converts an array of strings into a single string
 def to_string(user_input_array):
     result = '['
 
@@ -134,6 +134,7 @@ async def on_message(message):
 
     print(f'[{channel}] {username}: "{user_message}"')
 
+    # Ensures the bot only responds to messsages beginning with "!roll " or "!help"
     if message.content[0:6] == '!roll ' or message.content == '!help':
         await send(message, user_message)
 
